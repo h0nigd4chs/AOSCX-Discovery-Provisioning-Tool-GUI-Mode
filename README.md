@@ -1,6 +1,3 @@
-Hier ist die vollständige und korrekt formatierte Markdown-Version des Skripts:
-
-```markdown
 # Aruba AOS CX Discovery & Provisioning Tool (GUI Mode)
 
 Willkommen zum **Aruba AOS CX Discovery Provisioning Tool (GUI Mode)**! Dieses Tool bietet eine benutzerfreundliche grafische Oberfläche (GUI), um Aruba AOS CX-Switches in deinem Netzwerk über DHCP-Anfragen automatisch zu erkennen, sie zu provisionieren und verwalten.
@@ -37,9 +34,9 @@ Um dieses Tool auszuführen, benötigst du folgende Abhängigkeiten:
 
 Um die benötigten Python-Bibliotheken zu installieren, führe folgenden Befehl aus:
 
-```bash
+bash
 python -m pip install scapy netmiko pygame Pillow
-```
+
 
 ## Installation
 
