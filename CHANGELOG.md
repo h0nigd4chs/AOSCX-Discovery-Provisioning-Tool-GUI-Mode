@@ -1,7 +1,7 @@
 ```markdown
 # Change-Log
 
-## [v0.4] - 2023-09-29
+## [v0.4] - 2023-10-01
 
 ### Hinzugefügt
 - Ein neues Feld für das Admin-Passwort wurde im Provisionierungsfenster hinzugefügt, um das Passwort auf den Switches festzulegen.
@@ -9,7 +9,7 @@
 - Der "Beenden"-Button dient nun auch zum Abbrechen des Programms in beiden Fenstern.
 - Erfolgsfenster nach erfolgreicher Provisionierung, welches alle provisionierten Switches mit Hostnamen und IP-Adressen auflistet.
 
-## [v0.3] - 2023-09-20
+## [v0.3] - 2023-09-29
 
 ### Hinzugefügt
 - Grundlegende DHCP-Discovery-Funktionalität mit GUI.
