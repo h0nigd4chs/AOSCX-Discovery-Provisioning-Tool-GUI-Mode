@@ -37,7 +37,7 @@ Um die benötigten Python-Bibliotheken zu installieren, führe folgenden Befehl 
 
 ```bash
 python -m pip install scapy netmiko pygame Pillow
-
+```
 
 ## Installation
 
