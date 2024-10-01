@@ -23,7 +23,7 @@ Um dieses Tool auszuführen, benötigst du folgende Abhängigkeiten:
 Um die benötigten Python-Bibliotheken zu installieren, führe folgenden Befehl aus:
 
 ```bash
-pip install scapy netmiko
+python -m pip install scapy netmiko
 ```
 
 ## Installation
@@ -35,20 +35,8 @@ pip install scapy netmiko
     cd aruba-aos-cx-discovery-provisioning-tool
     ```
 
-2. Installiere die Abhängigkeiten:
 
-    ```bash
-    python -m pip install -r requirements.txt
-    ```
-
-    *(Falls du keine `requirements.txt` hast, erstelle sie mit folgendem Inhalt):*
-
-    ```
-    scapy
-    netmiko
-    ```
-
-3. Starte das Tool:
+2. Starte das Tool:
 
     ```bash
     python discovery_provisioning_gui.py
