@@ -44,7 +44,7 @@ class DHCPGui:
     def __init__(self, root):
         self.root = root
         # Fensterhöhe um 25% erhöhen
-        self.root.title(f"Aruba AOS CX Discovery Provisioning Tool {VERSION} (GUI Mode)")
+        self.root.title(f"Aruba AOS CX Discovery & Provisioning Tool {VERSION} (GUI Mode)")
         self.root.geometry("800x750")  # Erhöhte Fenstergröße (25% mehr Höhe)
 
         # Setze ein modernes Theme
