@@ -10,8 +10,8 @@ from tkinter import ttk, scrolledtext, messagebox
 from netmiko import ConnectHandler
 import queue
 import ipaddress
-import pygame  # Bibliothek für die Musiksteuerung
-from PIL import Image, ImageTk, ImageSequence  # Bibliothek für die Bildanzeige und GIF-Animation
+import pygame
+from PIL import Image, ImageTk, ImageSequence
 
 # Version des Tools
 VERSION = "v0.5"
@@ -21,6 +21,7 @@ option_60_patterns = ["6000", "6100", "6200", "6300", "6400"]
 
 # CSV-Datei Pfad
 csv_file = "dhcp_devices.csv"
+session_logs_folder = "Session-Logs"
 
 # Gesehene Geräte speichern (um doppelte Einträge zu vermeiden)
 seen_devices = set()
@@ -38,6 +39,10 @@ data_folder = "data"
 pygame.mixer.init()
 pygame.mixer.music.load(os.path.join(data_folder, "bgm.mp3"))  # Hintergrundmusik laden
 pygame.mixer.music.play(-1)  # Musik in Endlosschleife abspielen
+
+# Sicherstellen, dass der Ordner für Session-Logs existiert
+if not os.path.exists(session_logs_folder):
+    os.makedirs(session_logs_folder)
 
 # GUI erstellen
 class DHCPGui:
@@ -180,6 +185,8 @@ class DHCPGui:
             self.interface_combo.current(0)
 
     def start_discovery(self):
+        global stop_discovery
+        stop_discovery = False
         self.start_button.config(state=DISABLED)
         self.stop_button.config(state=NORMAL)
 
@@ -193,12 +200,202 @@ class DHCPGui:
         self.log("Discovery-Prozess wird gestoppt...")
         self.stop_button.config(state=DISABLED)
 
+    def discovery_thread(self):
+        global stop_discovery
+
+        selected_interface = self.interface_var.get()
+
+        if not selected_interface:
+            messagebox.showerror("Fehler", "Bitte ein Interface auswählen")
+            self.start_button.config(state=NORMAL)
+            return
+
+        # Extrahieren des Interface-Namens (vor dem Bindestrich)
+        interface = selected_interface.split(" - ")[0]
+
+        self.log(f"Überwache DHCP-Requests auf Interface: {interface}")
+
+        # CSV-Datei vorbereiten
+        if not os.path.exists(csv_file):
+            with open(csv_file, mode='w', newline='') as file:
+                writer = csv.writer(file)
+                writer.writerow(["MAC-Adresse", "IP-Adresse", "Option 60"])
+
+        while not stop_discovery:
+            scapy.sniff(iface=interface, filter="udp and (port 67 or port 68)", prn=self.dhcp_packet_callback, store=0, timeout=1)
+
+        self.log("Discovery-Prozess beendet.")
+        self.stop_button.config(state=DISABLED)
+        self.provision_button.config(state=NORMAL)
+
+    def dhcp_packet_callback(self, packet):
+        if packet.haslayer(DHCP):
+            mac_addr = packet[Ether].src
+            ip_addr = packet[IP].src if IP in packet else "0.0.0.0"
+
+            if ip_addr == "0.0.0.0":
+                ip_addr = self.get_requested_ip(packet[DHCP].options)
+                if ip_addr is None:
+                    return
+
+            for option in packet[DHCP].options:
+                if option[0] == 'vendor_class_id':
+                    option_60 = option[1].decode('utf-8')
+                    if any(pattern in option_60 for pattern in option_60_patterns):
+                        self.write_to_csv(mac_addr, ip_addr, option_60)
+                        self.log(f"Erkanntes Gerät: {mac_addr}, {ip_addr}, {option_60}")
+                    break
+
+    def write_to_csv(self, mac, ip, option_60):
+        global seen_devices
+        if (mac, ip, option_60) not in seen_devices:
+            seen_devices.add((mac, ip, option_60))
+            with open(csv_file, mode='a', newline='') as file:
+                writer = csv.writer(file)
+                writer.writerow([mac, ip, option_60])
+
+    def get_requested_ip(self, dhcp_options):
+        for option in dhcp_options:
+            if option[0] == 'requested_addr':
+                return option[1]
+        return None
+
     def open_provision_window(self):
-        # Dummy-Methode als Platzhalter, um den Fehler zu beheben
-        pass
+        """Provisionierungsfenster mit demselben Stil und Farben öffnen."""
+        provision_window = Toplevel(self.root)
+        provision_window.title("Switch Provisionierung")
+        provision_window.geometry("600x500")
+        provision_window.configure(bg=self.bg_color)
+
+        # Hostname-Präfix-Eingabefeld
+        Label(provision_window, text="Hostnamen-Präfix eingeben:", bg=self.bg_color, fg="#000000").pack(pady=5)
+        self.hostname_prefix_var = StringVar(value="myswitch")
+        hostname_entry = Entry(provision_window, textvariable=self.hostname_prefix_var)
+        hostname_entry.pack(pady=5)
+
+        # Admin Passwort-Eingabefeld
+        Label(provision_window, text="Admin Passwort eingeben:", bg=self.bg_color, fg="#000000").pack(pady=5)
+        self.password_var = StringVar()
+        password_entry = Entry(provision_window, textvariable=self.password_var, show="*")
+        password_entry.pack(pady=5)
+
+        # IP-Adresse-Eingabefeld
+        Label(provision_window, text="Start-IP-Adresse (optional):", bg=self.bg_color, fg="#000000").pack(pady=5)
+        self.ip_address_var = StringVar()
+        ip_address_entry = Entry(provision_window, textvariable=self.ip_address_var)
+        ip_address_entry.pack(pady=5)
+
+        # SNMP Community-Eingabefeld
+        Label(provision_window, text="SNMP Community (optional):", bg=self.bg_color, fg="#000000").pack(pady=5)
+        self.snmp_community_var = StringVar()
+        snmp_entry = Entry(provision_window, textvariable=self.snmp_community_var)
+        snmp_entry.pack(pady=5)
+
+        # Gefundene Hosts laden
+        hosts_with_option60 = self.get_hosts_with_option60_from_csv(csv_file)
+        self.selected_switches = []
+
+        for host, option_60 in hosts_with_option60:
+            var = BooleanVar()
+            cb = Checkbutton(provision_window, text=f"{host} - {option_60}", variable=var, bg=self.bg_color, fg="#000000")
+            cb.pack(anchor=W)
+            self.selected_switches.append((host, var))
+
+        Button(provision_window, text="Provisionierung Starten", command=self.start_provision_batch, bg=self.button_color, fg=self.text_color, font=("Segoe UI", 10, "bold")).pack(pady=20)
+        Button(provision_window, text="Abbrechen", command=provision_window.destroy, bg=self.button_color, fg=self.text_color, font=("Segoe UI", 10, "bold")).pack(pady=10)
+
+    def get_hosts_with_option60_from_csv(self, csv_file):
+        """Liest IP-Adressen und Option 60 aus der CSV-Datei."""
+        hosts_with_option60 = []
+        try:
+            with open(csv_file, mode='r') as file:
+                reader = csv.DictReader(file)
+                for row in reader:
+                    hosts_with_option60.append((row['IP-Adresse'], row['Option 60']))
+        except Exception as e:
+            self.log(f"Fehler beim Lesen der CSV-Datei: {e}")
+        return hosts_with_option60
+
+    def start_provision_batch(self):
+        selected_hosts = [host for host, var in self.selected_switches if var.get()]
+        hostname_prefix = self.hostname_prefix_var.get()
+        admin_password = self.password_var.get()  # Admin Passwort
+        ip_address = self.ip_address_var.get()
+        snmp_community = self.snmp_community_var.get()
+
+        ip_base = None
+        if ip_address:
+            try:
+                ip_base = ipaddress.IPv4Address(ip_address)
+            except ipaddress.AddressValueError:
+                messagebox.showerror("Fehler", "Ungültige IP-Adresse")
+                return
+
+        for index, host_ip in enumerate(selected_hosts, start=1):
+            hostname = f"{hostname_prefix}{index:02d}"
+
+            # IP-Adresse für jeden Switch inkrementieren
+            if ip_base:
+                new_ip = str(ip_base + index)
+            else:
+                new_ip = host_ip
+
+            self.configure_switch(host_ip, hostname, admin_password, new_ip, snmp_community)
+
+    def configure_switch(self, switch_ip, hostname, admin_password, new_ip, snmp_community):
+        session_log = os.path.join(session_logs_folder, f'session_log_{switch_ip}.txt')
+        switch = {
+            'device_type': 'aruba_os',
+            'host': switch_ip,
+            'username': 'admin',
+            'password': '',
+            'secret': 'secret',
+            'global_delay_factor': 4,
+            'session_log': session_log
+        }
+
+        try:
+            self.log(f"Verbinde zu {switch_ip} für die Provisionierung...")
+
+            connection = ConnectHandler(**switch)
+            connection.enable()
+
+            # Konfigurationsbefehle
+            commands = [
+                f"conf t",
+                f"hostname {hostname}",
+                f"user admin password plaintext {admin_password}",
+                "vlan 105",
+                "name TEST_105",
+                "vlan 106",
+                "name TEST_106",
+                "vlan 107",
+                "name TEST_107",
+            ]
+
+            if new_ip:
+                commands.extend([
+                    "interface vlan 1",
+                    f"ip address {new_ip} 255.255.255.0",
+                ])
+
+            if snmp_community:
+                commands.append(f"snmp-server community {snmp_community}")
+
+            for command in commands:
+                output = connection.send_command(command)
+                self.log(output)
+
+            connection.send_command("write memory")
+            connection.disconnect()
+
+            self.log(f"Provisionierung von {hostname} ({switch_ip}) erfolgreich abgeschlossen.")
+
+        except Exception as e:
+            self.log(f"Fehler bei der Provisionierung von {switch_ip}: {e}")
 
     def exit_program(self):
-        # Programm komplett beenden
+        """Programm beenden."""
         self.root.destroy()
 
 # Start der GUI
@@ -206,3 +403,4 @@ if __name__ == "__main__":
     root = Tk()
     app = DHCPGui(root)
     root.mainloop()
+
