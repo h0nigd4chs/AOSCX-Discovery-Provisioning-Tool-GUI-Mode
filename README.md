@@ -1,10 +1,13 @@
+Hier ist die vollständige und korrekt formatierte Markdown-Version des Skripts:
+
+```markdown
 # Aruba AOS CX Discovery & Provisioning Tool (GUI Mode)
 
 Willkommen zum **Aruba AOS CX Discovery Provisioning Tool (GUI Mode)**! Dieses Tool bietet eine benutzerfreundliche grafische Oberfläche (GUI), um Aruba AOS CX-Switches in deinem Netzwerk über DHCP-Anfragen automatisch zu erkennen, sie zu provisionieren und verwalten.
 
 ## Version
 
-**Aktuelle Version**: v0.4
+**Aktuelle Version**: v0.5
 
 ## Funktionen
 
@@ -14,6 +17,8 @@ Willkommen zum **Aruba AOS CX Discovery Provisioning Tool (GUI Mode)**! Dieses T
 - **Vendor Class ID (Option 60)**: Erkennung des Vendor Class Identifier (Switch-Typ) durch die Analyse der DHCP-Anfragen.
 - **Batch-Provisionierung**: Die Provisionierung kann in Batches durchgeführt werden, sodass mehrere Switches gleichzeitig konfiguriert werden können.
 - **Logausgabe**: Protokolle aller Vorgänge zur Fehlerbehebung und Überwachung.
+- **Hintergrundmusik**: Eine angenehme Hintergrundmusik mit einstellbarer Lautstärke und Stummschaltfunktion.
+- **Verbesserte grafische Darstellung**: Moderneres Design und Layout mit einem animierten GIF und einem farblich abgestimmten Thema.
 
 ## Change-Log
 
@@ -27,11 +32,13 @@ Um dieses Tool auszuführen, benötigst du folgende Abhängigkeiten:
 - **Scapy** zur Erkennung von Netzwerkpaketen.
 - **Netmiko** für die SSH-basierte Konfiguration der Switches.
 - **Tkinter** für die grafische Benutzeroberfläche (normalerweise in Python enthalten).
+- **Pygame** für die Hintergrundmusiksteuerung.
+- **Pillow** für die Bild- und GIF-Anzeige.
 
 Um die benötigten Python-Bibliotheken zu installieren, führe folgenden Befehl aus:
 
 ```bash
-python -m pip install scapy netmiko
+python -m pip install scapy netmiko pygame Pillow
 ```
 
 ## Installation
@@ -134,3 +141,4 @@ Beiträge sind willkommen! Wenn du etwas beitragen möchtest, kannst du gerne ei
 Bei Fragen oder Anmerkungen, bitte kontaktieren:
 
 - **h0nigd4chs** - honigdachsbau.de
+```
