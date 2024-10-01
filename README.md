@@ -38,7 +38,7 @@ pip install scapy netmiko
 2. Installiere die Abhängigkeiten:
 
     ```bash
-    pip install -r requirements.txt
+    python -m pip install -r requirements.txt
     ```
 
     *(Falls du keine `requirements.txt` hast, erstelle sie mit folgendem Inhalt):*
