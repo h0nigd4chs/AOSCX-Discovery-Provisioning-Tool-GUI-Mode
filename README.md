@@ -1,4 +1,4 @@
-# Aruba AOS CX Discovery Provisioning Tool (GUI Mode)
+# Aruba AOS CX Discovery & Provisioning Tool (GUI Mode)
 
 Willkommen zum **Aruba AOS CX Discovery Provisioning Tool (GUI Mode)**! Dieses Tool bietet eine benutzerfreundliche grafische Oberfläche (GUI), um Aruba AOS CX-Switches in deinem Netzwerk über DHCP-Anfragen automatisch zu erkennen, sie zu provisionieren und verwalten.
 
