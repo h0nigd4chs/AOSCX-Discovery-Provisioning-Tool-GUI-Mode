@@ -139,5 +139,4 @@ Beiträge sind willkommen! Wenn du etwas beitragen möchtest, kannst du gerne ei
 Bei Fragen oder Anmerkungen, bitte kontaktieren:
 
 - **h0nigd4chs** - honigdachsbau.de
-```
 
