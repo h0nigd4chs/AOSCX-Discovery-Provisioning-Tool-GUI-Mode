@@ -124,7 +124,8 @@ Durch das Abhören von DHCP-Anfragen kannst du auch andere Geräte im Netzwerk e
 
 ## Screenshots
 
-*Füge hier Screenshots der GUI und der wichtigsten Schritte hinzu, z. B. Discovery-Prozess, Auswahl der Switches zur Provisionierung, Log-Ausgaben etc.*
+![image](https://github.com/user-attachments/assets/2f758990-4b4c-420b-9c7f-f9d516614460)
+
 
 ## Lizenz
 
